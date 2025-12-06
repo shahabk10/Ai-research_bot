@@ -45,7 +45,7 @@ If you want to run this tool on your own machine:
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/shahabk10/ai-research-agent.git](https://github.com/shahabk10/ai-research-agent.git)
+    git clone [https://github.com/shahabk10/ai-research-agent.git](https://github.com/shahabk10/ai-resarch-agent.git)
     ```
 2.  **Install requirements:**
     ```bash
@@ -62,4 +62,3 @@ If you want to run this tool on your own machine:
 Developed by **Shahab Ullah Khattak**. For queries or custom AI agents, feel free to reach out!
 
 ---
-*Powered by Open Source Intelligence (OSINT)*
