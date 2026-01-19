@@ -1,3 +1,5 @@
 streamlit
 fpdf
 streamlit-lottie
+wikipedia
+requests
