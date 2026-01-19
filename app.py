@@ -1,33 +1,31 @@
 import streamlit as st
-import requests
-from streamlit_lottie import st_lottie
 from fpdf import FPDF
 import wikipediaapi
 import datetime
+import io
 
 # ==========================================
-# 1. CORE RESEARCH ENGINE (Improved)
+# 1. CORE RESEARCH ENGINE
 # ==========================================
 
 def get_academic_data(topic):
-    # Wikipedia API with a proper User-Agent to avoid blocks
+    # Proper User-Agent for Wikipedia API
     wiki_wiki = wikipediaapi.Wikipedia(
         language='en',
         extract_format=wikipediaapi.ExtractFormat.WIKI,
-        user_agent="AcademicResearchBot/1.0 (contact: your@email.com)"
+        user_agent="AcademicResearchBot/1.0 (contact: support@assignmentbot.com)"
     )
     page = wiki_wiki.page(topic)
     
     if not page.exists():
         return None
         
-    content = {
+    return {
         "title": page.title,
-        "summary": page.summary[:1500], # First few paragraphs
+        "summary": page.summary[:2000],
         "sections": [s.title for s in page.sections[:6]],
-        "text": page.text[:5000] # Primary content
+        "full_content": page.text[:10000]
     }
-    return content
 
 class ProfessionalPDF(FPDF):
     def header(self):
@@ -39,24 +37,24 @@ class ProfessionalPDF(FPDF):
     def footer(self):
         self.set_y(-15)
         self.set_font('helvetica', 'I', 8)
-        self.cell(0, 10, f'Page {self.page_no()} | AI Research Engine', 0, 0, 'C')
+        self.cell(0, 10, f'Page {self.page_no()} | AI Academic Engine', 0, 0, 'C')
 
 def create_pdf(data):
     pdf = ProfessionalPDF()
     pdf.add_page()
     
     # --- Professional Title Page ---
-    pdf.ln(40)
-    pdf.set_font('helvetica', 'B', 32)
-    pdf.set_text_color(26, 54, 104) # Professional Navy Blue
+    pdf.ln(50)
+    pdf.set_font('helvetica', 'B', 30)
+    pdf.set_text_color(26, 54, 104) # Deep Professional Blue
     pdf.multi_cell(0, 15, data['title'].upper(), align='C')
     
     pdf.ln(10)
     pdf.set_font('helvetica', '', 14)
-    pdf.set_text_color(50, 50, 50)
+    pdf.set_text_color(80, 80, 80)
     pdf.cell(0, 10, f"Generated on: {datetime.date.today().strftime('%B %d, %Y')}", ln=True, align='C')
     
-    # --- Content Sections ---
+    # --- Content Page ---
     pdf.add_page()
     pdf.set_font('helvetica', 'B', 16)
     pdf.set_text_color(26, 54, 104)
@@ -65,13 +63,14 @@ def create_pdf(data):
     
     pdf.set_font('helvetica', '', 11)
     pdf.set_text_color(0, 0, 0)
-    # Clean text for PDF encoding
+    # Cleaning text for latin-1 compatibility
     clean_summary = data['summary'].encode('latin-1', 'ignore').decode('latin-1')
     pdf.multi_cell(0, 8, clean_summary)
     
+    # --- Structured Sections ---
     pdf.ln(10)
     pdf.set_font('helvetica', 'B', 16)
-    pdf.cell(0, 10, "2. KEY RESEARCH FINDINGS", ln=True)
+    pdf.cell(0, 10, "2. CORE ANALYSIS & FINDINGS", ln=True)
     
     for i, section in enumerate(data['sections'], 1):
         pdf.ln(5)
@@ -80,52 +79,47 @@ def create_pdf(data):
         pdf.cell(0, 10, f"2.{i} {section}", ln=True)
         pdf.set_font('helvetica', '', 11)
         pdf.set_text_color(0, 0, 0)
-        pdf.multi_cell(0, 7, f"Detailed exploration and academic data regarding {section}. This segment provides a comprehensive overview of the technical and theoretical frameworks associated with {data['title']}.")
+        pdf.multi_cell(0, 7, f"Detailed academic exploration regarding {section}. This report segment evaluates the key theoretical and practical implications of {data['title']} within this specific domain.")
 
-    # Fixing the AttributeError: output() in fpdf2 returns bytes directly if no filename
-    return pdf.output()
+    # FIX: Using bytes conversion to avoid "Invalid binary data format"
+    return bytes(pdf.output())
 
 # ==========================================
-# 2. CLEAN & BRIGHT UI (Student Friendly)
+# 2. PROFESSIONAL BRIGHT UI
 # ==========================================
 
-st.set_page_config(page_title="Researcher Pro", layout="wide")
+st.set_page_config(page_title="AI Researcher Pro", layout="wide")
 
-# Custom CSS for Professional White Theme
 st.markdown("""
     <style>
+    /* Professional Clean Theme */
     .stApp { background-color: #FFFFFF; color: #1E293B; }
     
-    /* Clean Cards */
+    /* Content Cards */
     div.stChatMessage {
         background-color: #F8FAFC;
         border: 1px solid #E2E8F0;
         border-radius: 12px;
-        color: #1E293B !important;
+        padding: 20px;
     }
     
-    /* Sidebar Styling */
-    section[data-testid="stSidebar"] {
-        background-color: #F1F5F9;
-        border-right: 1px solid #E2E8F0;
-    }
-
-    /* Professional Buttons */
+    /* Typography Fix */
+    p, span, div { color: #1E293B !important; font-size: 16px; }
+    h1, h2, h3 { color: #1E3A8A !important; }
+    
+    /* Professional Blue Button */
     .stButton>button {
         background-color: #2563EB;
-        color: white;
+        color: white !important;
         border-radius: 8px;
+        padding: 0.7rem 2.5rem;
         font-weight: 600;
         border: none;
-        padding: 0.5rem 2rem;
     }
-    .stButton>button:hover { background-color: #1D4ED8; border: none; color: white; }
+    .stButton>button:hover { background-color: #1D4ED8; }
     
-    /* Headers */
-    h1, h2, h3 { color: #1E3A8A !important; font-family: 'Inter', sans-serif; }
-    
-    /* Input Fix */
-    .stTextInput>div>div>input { border: 1px solid #CBD5E1; }
+    /* Sidebar Fix */
+    section[data-testid="stSidebar"] { background-color: #F1F5F9; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -134,47 +128,47 @@ st.markdown("""
 # ==========================================
 
 with st.sidebar:
-    st.title("📂 Resource Center")
-    st.write("Tools for Students")
+    st.title("📂 Project Assets")
+    st.write("Academic Tools v2.1")
     st.divider()
     uploaded_file = st.file_uploader("Upload reference documents", type=['pdf', 'txt'])
-    st.info("Uploaded files will be used to enhance the research accuracy.")
 
-st.title("📑 AI Academic Research Engine")
-st.write("Generate professional, structured assignments with high readability.")
+st.title("📑 AI Professional Assignment Engine")
+st.write("Structured, Readable, and Academic-Grade Research Reports.")
 
-if prompt := st.chat_input("Enter your assignment topic (e.g. Artificial Intelligence)..."):
+if prompt := st.chat_input("Enter your research topic..."):
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.write(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Compiling academic data..."):
+        with st.spinner("Compiling structured research..."):
             data = get_academic_data(prompt)
             
             if data:
-                # Screen Display
                 st.subheader(data['title'])
                 st.markdown("---")
-                st.markdown("### 📘 Summary")
+                
+                # Display Summary on Screen
+                st.markdown("### 🔍 Summary Overview")
                 st.write(data['summary'])
                 
-                # Structure Preview
-                with st.expander("View Document Structure"):
+                # Structure Details
+                with st.expander("Show Document Table of Contents"):
                     for i, s in enumerate(data['sections'], 1):
                         st.write(f"**{i}.** {s}")
                 
                 # PDF Generation Logic
                 try:
-                    pdf_output = create_pdf(data)
+                    pdf_data = create_pdf(data)
                     st.divider()
                     st.download_button(
-                        label="📥 Download Professional PDF",
-                        data=pdf_output,
+                        label="📥 Download Professional Assignment (PDF)",
+                        data=pdf_data,
                         file_name=f"Assignment_{prompt.replace(' ','_')}.pdf",
                         mime="application/pdf"
                     )
-                    st.success("Professional Report Ready for Download.")
+                    st.success("PDF generated successfully. Ready for download.")
                 except Exception as e:
                     st.error(f"Generation Error: {e}")
             else:
-                st.warning("No specific academic matches found. Please refine your topic name.")
+                st.warning("Could not find academic matches for this topic. Please try a standard academic term.")
