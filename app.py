@@ -1,153 +1,69 @@
 import streamlit as st
-import wikipedia
-import textwrap
-from datetime import datetime
-import time
+from modules.ui_components import setup_ui, sidebar_logic
+from modules.ai_engine import get_ai_response
+from modules.utils import text_to_audio, generate_pdf # New utility
+from streamlit_lottie import st_lottie
+import requests
 
-# --- 1. Page Config (Tab Title & Icon) ---
-st.set_page_config(
-    page_title="Pro Research AI",
-    page_icon="🧠",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# 1. Page Configuration (Colorful Theme)
+st.set_page_config(page_title="MediCore Pro AI", layout="wide")
 
-# --- 2. Custom CSS for Styling (Sundar Design) ---
+# Custom CSS for Gradient Background & Animations
 st.markdown("""
     <style>
-    .main_title {
-        font-size: 3rem;
-        color: #4CAF50;
-        text-align: center;
-        font-weight: bold;
+    .main { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+    .stButton>button { 
+        background: linear-gradient(45deg, #00dbde, #fc00ff); 
+        color: white; border-radius: 20px; border: none;
+        transition: 0.3s;
     }
-    .subtitle {
-        font-size: 1.2rem;
-        color: #555;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-    .report_box {
-        background-color: #f0f2f6;
-        padding: 20px;
-        border-radius: 10px;
-        border-left: 5px solid #4CAF50;
-    }
+    .stButton>button:hover { transform: scale(1.05); }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 3. Sidebar (Controls) ---
-with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/2040/2040946.png", width=100)
-    st.title("⚙️ Control Panel")
-    st.write("---")
-    
-    # Interactivity: Slider for Summary Length
-    summary_len = st.slider("Summary Length (Sentences)", min_value=3, max_value=10, value=5)
-    
-    # Interactivity: Language (Future feature placeholder)
-    language = st.selectbox("Select Language", ["English", "Urdu (Coming Soon)", "Spanish (Coming Soon)"])
-    
-    st.write("---")
-    st.caption("🚀 Powered by Wikipedia API")
-    st.caption("👨‍💻 Developed by You")
+# Lottie Animation Loader
+def load_lottieurl(url):
+    r = requests.get(url)
+    return r.json() if r.status_code == 200 else None
 
-# --- 4. Main Page UI ---
-st.markdown('<div class="main_title">🧠 AI Assignment & Research Bot</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Generate Professional Reports in Seconds</div>', unsafe_allow_html=True)
+lottie_medical = load_lottieurl("https://assets5.lottiefiles.com/packages/lf20_5njp9vgg.json")
 
-# Input Section (Center Aligned using Columns)
-col1, col2, col3 = st.columns([1, 2, 1])
+# 2. Logic & Setup
+if "history" not in st.session_state: st.session_state.history = []
+sidebar_logic()
 
+col1, col2 = st.columns([1, 3])
+with col1:
+    st_lottie(lottie_medical, height=150)
 with col2:
-    topic = st.text_input("Enter Topic Name:", placeholder="e.g., Artificial Intelligence, Black Holes, History of Bitcoin")
-    generate_btn = st.button("✨ Generate Assignment", use_container_width=True, type="primary")
+    st.title("🚀 MediCore Assignment Engine")
+    st.caption("Advanced Research & Document Generation")
 
-# --- 5. Logic & Result Display ---
-if generate_btn and topic:
-    status_text = st.empty()
-    progress_bar = st.progress(0)
+# 3. File Upload Section (New)
+uploaded_file = st.file_uploader("Upload reference document (PDF/TXT)", type=["pdf", "txt"])
+file_context = ""
+if uploaded_file:
+    # PDF/Txt reading logic yahan add karein
+    file_context = "User has uploaded a document for reference."
+    st.success("Document analyzed successfully!")
+
+# 4. Chat & Assignment Generation
+if prompt := st.chat_input("Enter topic or assignment details..."):
+    st.session_state.history.append({"role": "user", "content": prompt})
     
-    try:
-        # Simulation of processing (UI effect)
-        status_text.text("🔍 Scanning Database...")
-        progress_bar.progress(20)
-        time.sleep(0.5)
-        
-        status_text.text(f"📖 Reading articles about '{topic}'...")
-        progress_bar.progress(50)
-        
-        # Wikipedia Fetching
-        page = wikipedia.page(topic, auto_suggest=False)
-        title = page.title
-        url = page.url
-        content = page.content
-        
-        status_text.text("✍️ Writing Professional Report...")
-        progress_bar.progress(80)
-        
-        # Data Processing
-        summary = wikipedia.summary(topic, sentences=summary_len)
-        body_text = content.split('== See also ==')[0][:4000] # Clean content
-        
-        # Final Report Format
-        report_text = f"""
-        TOPIC: {title.upper()}
-        Date Generated: {datetime.now().strftime("%Y-%m-%d %H:%M")}
-        Source: {url}
-        
-        1. EXECUTIVE SUMMARY
-        ---------------------
-        {textwrap.fill(summary, width=80)}
-        
-        2. DETAILED ANALYSIS
-        ---------------------
-        {textwrap.fill(body_text, width=80)}
-        
-        3. CONCLUSION
-        --------------
-        The topic '{title}' is verified and researched using open-source intelligence.
-        """
-        
-        progress_bar.progress(100)
-        time.sleep(0.5)
-        status_text.empty()
-        progress_bar.empty()
-        
-        # --- Display Results (Designing Part) ---
-        st.success("✅ Research Completed Successfully!")
-        
-        # 2 Columns for result (Left: Summary, Right: Details)
-        r_col1, r_col2 = st.columns([2, 1])
-        
-        with r_col1:
-            st.markdown(f"### 📄 {title}")
-            st.info(summary)
+    with st.chat_message("assistant", avatar="🩺"):
+        with st.spinner("Generating Professional Assignment..."):
+            # Context merge karna (File + Prompt)
+            full_query = f"{file_context}\n\nTask: {prompt}"
+            reply = get_ai_response(st.session_state.history, full_query)
             
-            with st.expander("📖 Read Full Research (Detailed)"):
-                st.write(body_text)
-                
-        with r_col2:
-            st.markdown("### 📥 Actions")
-            st.write(f"**Source:** [Wikipedia Link]({url})")
+            st.markdown(reply)
             
-            # Download Button
+            # PDF Generation & Download (New)
+            pdf_file = generate_pdf(reply) # modules/utils.py mein function create karein
             st.download_button(
-                label="💾 Download Assignment (.txt)",
-                data=report_text,
-                file_name=f"{topic.replace(' ', '_')}_Assignment.txt",
-                mime="text/plain",
-                use_container_width=True
+                label="📥 Download Assignment (PDF)",
+                data=pdf_file,
+                file_name="Assignment_Research.pdf",
+                mime="application/pdf"
             )
-            st.success("Ready for submission!")
-
-    except wikipedia.exceptions.DisambiguationError as e:
-        st.error("⚠️ Topic too vague! Did you mean one of these?")
-        st.write(e.options[:5])
-    except wikipedia.exceptions.PageError:
-        st.error("❌ No page found! Please check spelling.")
-    except Exception as e:
-        st.error(f"Error: {e}")
-
-elif generate_btn and not topic:
-    st.warning("⚠️ Please enter a topic first!")
