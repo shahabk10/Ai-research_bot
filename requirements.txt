@@ -1,3 +1,4 @@
+fpdf
+streamlit-lottie
+requests
 streamlit
-pip install fpdf streamlit-lottie
-wikipedia
