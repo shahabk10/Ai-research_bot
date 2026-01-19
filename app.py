@@ -3,12 +3,29 @@ from fpdf import FPDF
 import wikipediaapi
 import datetime
 import io
+import PyPDF2 # For PDF parsing
+from docx import Document # For DOCX parsing (optional)
+import requests # For Lottie animations
 
 # ==========================================
-# 1. DEEP RESEARCH ENGINE (Extended Data)
+# 1. CORE RESEARCH & DOCUMENT ENGINE
 # ==========================================
 
-def get_detailed_academic_data(topic):
+def extract_text_from_pdf(uploaded_file):
+    reader = PyPDF2.PdfReader(uploaded_file)
+    text = ""
+    for page_num in range(len(reader.pages)):
+        text += reader.pages[page_num].extract_text()
+    return text
+
+def extract_text_from_docx(uploaded_file):
+    doc = Document(uploaded_file)
+    text = ""
+    for paragraph in doc.paragraphs:
+        text += paragraph.text + "\n"
+    return text
+
+def get_academic_data_with_context(topic, context_text=""):
     wiki_wiki = wikipediaapi.Wikipedia(
         language='en',
         extract_format=wikipediaapi.ExtractFormat.WIKI,
@@ -16,23 +33,33 @@ def get_detailed_academic_data(topic):
     )
     page = wiki_wiki.page(topic)
     
-    if not page.exists():
+    if not page.exists() and not context_text:
         return None
         
-    # Extracting all sections for massive data
+    # Combine Wikipedia data with uploaded context
+    full_text = page.text if page.exists() else ""
+    
+    # Simple strategy: Add context at the beginning
+    combined_content = f"{context_text}\n\n{full_text}" 
+    
+    # Extract sections from combined content (simple approach for now)
     sections_content = []
-    for s in page.sections:
-        if len(s.text) > 50: # Only meaningful sections
-            sections_content.append({"title": s.title, "text": s.text})
-            # Sub-sections bhi include karna
-            for ss in s.sections:
-                sections_content.append({"title": f"{s.title} - {ss.title}", "text": ss.text})
+    # If Wikipedia page exists, use its sections for structure
+    if page.exists():
+        for s in page.sections:
+            if len(s.text) > 50:
+                sections_content.append({"title": s.title, "text": s.text})
+                for ss in s.sections:
+                    sections_content.append({"title": f"{s.title} - {ss.title}", "text": ss.text})
+    else: # If no Wikipedia page, just use context as one big section
+        sections_content.append({"title": "Uploaded Document Analysis", "text": context_text})
+
 
     return {
-        "title": page.title,
-        "summary": page.summary,
+        "title": page.title if page.exists() else topic,
+        "summary": page.summary if page.exists() else context_text[:1000] + "...", # Summarize context
         "sections": sections_content,
-        "full_text": page.text
+        "full_content": combined_content
     }
 
 class AssignmentPDF(FPDF):
@@ -97,7 +124,6 @@ def create_long_pdf(data):
 
     # --- PAGE 4+ : DETAILED SECTIONS ---
     for i, sec in enumerate(data['sections'], 2):
-        # New section on new page if it's substantial
         pdf.ln(10)
         pdf.set_font('helvetica', 'B', 16)
         pdf.set_text_color(26, 54, 104)
@@ -113,58 +139,157 @@ def create_long_pdf(data):
     return bytes(pdf.output())
 
 # ==========================================
-# 2. BRIGHT & CLEAN UI
+# 2. ANIMATED & VISUAL UI (Lottie + CSS)
 # ==========================================
 
-st.set_page_config(page_title="Academic Engine Pro", layout="wide")
+st.set_page_config(page_title="Academic AI Pro", layout="wide")
+
+# Lottie Animation Loader
+def load_lottieurl(url):
+    try:
+        r = requests.get(url, timeout=5)
+        if r.status_code == 200:
+            return r.json()
+    except requests.exceptions.RequestException:
+        pass
+    return None
+
+# Lottie URLs
+lottie_research_animation = load_lottieurl("https://assets5.lottiefiles.com/packages/lf20_ai9m8man.json")
+lottie_file_upload_animation = load_lottieurl("https://assets4.lottiefiles.com/packages/lf20_qf1t7kxe.json")
 
 st.markdown("""
     <style>
-    .stApp { background-color: #FFFFFF; }
-    p, span, div { color: #1E293B !important; font-size: 16px; }
-    h1, h2, h3 { color: #1E3A8A !important; }
-    .stButton>button {
-        background-color: #2563EB; color: white !important;
-        border-radius: 8px; padding: 0.7rem 3rem; font-weight: bold; border: none;
+    .stApp {
+        background: radial-gradient(circle at top left, #add8e6 0%, #ffffff 50%, #e0ffff 100%);
+        color: #1A1A2E; /* Dark Blue Text */
     }
-    div.stChatMessage { background-color: #F1F5F9; border-radius: 10px; }
+    
+    /* Animated Header */
+    .header-container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 20px;
+        background: rgba(255, 255, 255, 0.7);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    .stDownloadButton button {
+        background-color: #007bff;
+        color: white;
+        border-radius: 20px;
+        padding: 10px 25px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    .stDownloadButton button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+    }
+    /* Chat bubbles with light background */
+    div.stChatMessage {
+        background-color: #F8F9FA;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    /* Input field styling */
+    .stTextInput>div>div>input {
+        border-radius: 15px;
+        border: 1px solid #CED4DA;
+        padding: 10px 15px;
+        color: #1A1A2E;
+    }
     </style>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. INTERFACE
+# 3. INTERFACE EXECUTION
 # ==========================================
 
-st.title("📑 Full-Length Assignment Generator")
-st.write("Generating structured 4-5 page research reports automatically.")
+# Animated Header
+col_lottie, col_text = st.columns([1, 3])
+with col_lottie:
+    if lottie_research_animation:
+        st_lottie(lottie_research_animation, height=120, key="main_research_anim")
+with col_text:
+    st.markdown("<div class='header-container'>", unsafe_allow_html=True)
+    st.markdown("<h1>🎓 AI Academic Studio Pro</h1>", unsafe_allow_html=True)
+    st.markdown("<h4>Your Personal Research & Assignment Assistant</h4>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-if prompt := st.chat_input("Enter a broad topic (e.g., Global Warming, History of Rome, Artificial Intelligence)..."):
+st.write("---") # Separator
+
+# Document Upload Section (Animated)
+st.markdown("### 📄 Upload Your Study Material")
+st.write("Provide your notes, textbooks, or specific articles here. The AI will integrate this context into your assignment.")
+
+col_upload_lottie, col_upload_func = st.columns([1, 3])
+with col_upload_lottie:
+    if lottie_file_upload_animation:
+        st_lottie(lottie_file_upload_animation, height=100, key="file_upload_anim")
+with col_upload_func:
+    uploaded_file = st.file_uploader("Select a document (PDF, TXT, DOCX)", type=['pdf', 'txt', 'docx'])
+    
+    context_text = ""
+    if uploaded_file is not None:
+        file_extension = uploaded_file.name.split('.')[-1]
+        if file_extension == "pdf":
+            context_text = extract_text_from_pdf(uploaded_file)
+        elif file_extension == "txt":
+            context_text = uploaded_file.getvalue().decode("utf-8")
+        elif file_extension == "docx":
+            context_text = extract_text_from_docx(uploaded_file)
+        
+        if context_text:
+            st.success(f"'{uploaded_file.name}' loaded successfully! Content will be used for your assignment.")
+        else:
+            st.error("Could not extract text from the document. Please ensure it's a readable format.")
+
+st.write("---") # Separator
+
+st.markdown("### ✍️ Enter Your Assignment Topic")
+st.write("The AI will generate a detailed, multi-page academic report based on your topic and uploaded documents.")
+
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+# Chat Interface
+for msg in st.session_state.history:
+    with st.chat_message(msg['role']):
+        st.write(msg['content'])
+
+if prompt := st.chat_input("Start by typing a topic like 'Impact of AI on Education'"):
+    st.session_state.history.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.write(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Extracting deep research data... This may take a moment for 4-5 pages."):
-            data = get_detailed_academic_data(prompt)
+        with st.spinner("🚀 Generating multi-page academic report..."):
+            data = get_academic_data_with_context(prompt, context_text)
             
-            if data and len(data['sections']) > 2:
-                st.success(f"Extracted {len(data['sections'])} detailed sections for {data['title']}.")
+            if data and (data['sections'] or context_text): # Ensure there's enough data
+                st.markdown(f"**Report Title:** {data['title']}")
+                st.markdown("---")
+                st.markdown("### Executive Summary")
+                st.write(data['summary'])
                 
-                # Preview structure
-                with st.expander("Preview Table of Contents"):
-                    for sec in data['sections']:
-                        st.write(f"- {sec['title']}")
-                
-                # Long PDF Generation
+                with st.expander("Expand to see detailed sections"):
+                    for i, sec in enumerate(data['sections']):
+                        st.write(f"**{i+1}.** {sec['title']}")
+
                 try:
                     pdf_data = create_long_pdf(data)
-                    st.divider()
                     st.download_button(
-                        label="📥 Download Full 4-Page Assignment (PDF)",
+                        label="📥 Download Full Academic Report (PDF)",
                         data=pdf_data,
-                        file_name=f"Full_Assignment_{prompt.replace(' ','_')}.pdf",
+                        file_name=f"Academic_Report_{data['title'].replace(' ','_')}.pdf",
                         mime="application/pdf"
                     )
+                    st.success("Your professional report is ready for download!")
                 except Exception as e:
-                    st.error(f"Error during formatting: {e}")
+                    st.error(f"Error generating PDF: {e}. Please try again.")
             else:
-                st.warning("Topic is too narrow for a 4-page assignment. Try a broader subject.")
+                st.warning("Not enough data to create a detailed assignment. Try a broader topic or upload a more descriptive document.")
