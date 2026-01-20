@@ -1,43 +1,47 @@
-#  Pro Research AI: Automated Assignment Generator
+## **Pro Research AI: Premium Academic Engine**
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://ai-researchbot-ye6tancsnxf8q8hsyfiuqw.streamlit.app/)
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+### **📜 Overview**
 
-## 📜 Overview
-**Pro Research AI** is an intelligent web application designed to help students, researchers, and professionals automate the documentation process. 
-
-It fetches authentic data from **Wikipedia**, analyzes it, and generates a structured, professional-grade **Assignment/Report** (including Introduction, Detailed Analysis, and Conclusion) in seconds. The interface is built with **Streamlit** for a premium user experience.
+**Pro Research AI** is a high-fidelity academic tool designed to automate the synthesis of research into professional manuscripts. Unlike basic generators, it mimics the structure of a formal academic paper, integrating live web data with user-provided documents to produce structured, multi-page assignments in seconds.
 
 ---
 
-## 🚀 Key Features
+### **🚀 Key Features**
 
-* **🔍 Instant Research:** Scans thousands of articles to find the exact topic.
-* **📝 Structured Writing:** Automatically formats content into Executive Summary, Body, and Conclusion.
-* **🎨 Interactive UI:** Beautiful, responsive interface with custom CSS styling.
-* **💾 One-Click Export:** Download the generated assignment as a `.txt` file ready for submission.
-* **⚙️ Customizable:** User can control summary length via sidebar settings.
-
----
-
-## 🛠️ Tech Stack
-
-* **Frontend:** [Streamlit](https://streamlit.io/) (Python Framework)
-* **Data Source:** Wikipedia API
-* **Language:** Python 3.x
-* **Deployment:** Streamlit Cloud
+* **🔍 Multi-Source Synthesis:** Simultaneously scans **Wikipedia** and parses **uploaded files** (PDF, DOCX, TXT) to build a unified context.
+* **📑 Multi-Page PDF Formatting:** Generates high-resolution PDFs including a **Professional Cover Page**, **Table of Contents**, and **Structured Sections** (2.1, 2.2, etc.).
+* **🎭 Academic Tone Selection:** Allows users to shift the linguistic complexity between **Basic**, **Professional**, and **Deep Research** levels.
+* **📚 Auto-Bibliography:** Automatically generates citations and a bibliography section at the end of every report to maintain academic integrity.
+* **✨ Glassmorphism UI:** A modern, high-contrast interface designed for maximum readability and a premium user experience.
 
 ---
 
-## 📸 How It Works
+### **⚙️ How It Works**
 
-1.  **Enter a Topic:** Type any subject (e.g., "Artificial Intelligence", "History of Bitcoin").
-2.  **Processing:** The AI reads the database and extracts key information.
-3.  **Generation:** A professional report is displayed on the screen.
-4.  **Download:** Click the "Download Assignment" button to save the file.
+1. **Input & Context:** Enter your research topic and upload supporting lecture notes or textbooks in the sidebar.
+2. **Autonomous Extraction:** The engine fetches structured data from global academic databases and merges it with your uploaded files.
+3. **Drafting & Hierarchy:** The AI organizes the data into a logical flow—starting from an Executive Summary to deep technical analysis.
+4. **Download:** Export the finalized manuscript as a print-ready PDF with professional typography and layout.
 
 ---
+
+### **🛠️ Tech Stack**
+
+* **Frontend:** **Streamlit** (Advanced Custom CSS & Glassmorphism)
+* **Research Engine:** **Wikipedia-API** & **Contextual Document Parsing**
+* **Document Processing:** **fpdf2** (Binary PDF Generation) & **PyPDF2**
+* **Animations:** **Lottie** (JSON-based vector animations)
+* **Deployment:** **Streamlit Cloud** / **GitHub**
+
+---
+
+### **📸 User Interface Preview**
+
+* **Clean Sidebar:** For file uploads and tone adjustments.
+* **Dynamic Chat:** Real-time feedback as the AI compiles your research.
+* **Download Hub:** Instant access to the generated `.pdf` file.
+
+Would you like me to update the README file in your GitHub repository with this revised documentation?
 
 ## 📦 Installation (Run Locally)
 
