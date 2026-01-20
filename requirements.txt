@@ -2,6 +2,5 @@ streamlit
 fpdf2
 wikipedia-api
 PyPDF2
-python-docx
 requests
 streamlit-lottie
