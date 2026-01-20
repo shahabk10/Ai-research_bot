@@ -1,6 +1,7 @@
 streamlit
 fpdf2
 wikipedia-api
-PyPDF2 # Nayi library
-python-docx # Agar Word files bhi support karni hain
+PyPDF2
+python-docx
 requests
+streamlit-lottie
