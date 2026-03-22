@@ -12,7 +12,7 @@
 * **📑 Multi-Page PDF Formatting:** Generates high-resolution PDFs including a **Professional Cover Page**, **Table of Contents**, and **Structured Sections** (2.1, 2.2, etc.).
 * **🎭 Academic Tone Selection:** Allows users to shift the linguistic complexity between **Basic**, **Professional**, and **Deep Research** levels.
 * **📚 Auto-Bibliography:** Automatically generates citations and a bibliography section at the end of every report to maintain academic integrity.
-* **✨ Glassmorphism UI:** A modern, high-contrast interface designed for maximum readability and a premium user experience.
+* **✨ Glassmorphism UI:** A modern, high-contrast interface designed for maximum readability and a premium user experiences.
 
 ---
 
